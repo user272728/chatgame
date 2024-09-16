@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JavaScript Game</title>
+  <style>
+    canvas {
+      display: block;
+      margin: 0 auto;
+      background-color: #eee;
+    }
+  </style>
+</head>
+<body>
+  <h1 style="text-align:center;">Avoid the Obstacles!</h1>
+  <canvas id="gameCanvas" width="400" height="400"></canvas>
+
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // Player object
+    const player = {
+      x: 50,
+      y: 50,
+      size: 20,
+      speed: 5,
+      dx: 0,
+      dy: 0
+    };
+
+    // Obstacles array
+    const obstacles = [];
+
+    // Create an obstacle
+    function createObstacle() {
+      const size = Math.random() * 20 + 20;
+      const x = Math.random() * (canvas.width - size);
+      const y = Math.random() * (canvas.height - size);
+      const dx = (Math.random() - 0.5) * 4;
+      const dy = (Math.random() - 0.5) * 4;
+
+      obstacles.push({ x, y, size, dx, dy });
+    }
+
+    // Update player position
+    function updatePlayer() {
+      player.x += player.dx;
+      player.y += player.dy;
+
+      // Boundary detection
+      if (player.x < 0) player.x = 0;
+      if (player.y < 0) player.y = 0;
+      if (player.x + player.size > canvas.width) player.x = canvas.width - player.size;
+      if (player.y + player.size > canvas.height) player.y = canvas.height - player.size;
+    }
+
+    // Update obstacle positions
+    function updateObstacles() {
+      obstacles.forEach(obstacle => {
+        obstacle.x += obstacle.dx;
+        obstacle.y += obstacle.dy;
+
+        // Reverse direction if hitting canvas borders
+        if (obstacle.x < 0 || obstacle.x + obstacle.size > canvas.width) {
+          obstacle.dx *= -1;
+        }
+        if (obstacle.y < 0 || obstacle.y + obstacle.size > canvas.height) {
+          obstacle.dy *= -1;
+        }
+      });
+    }
+
+    // Draw player
+    function drawPlayer() {
+      ctx.fillStyle = 'blue';
+      ctx.fillRect(player.x, player.y, player.size, player.size);
+    }
+
+    // Draw obstacles
+    function drawObstacles() {
+      ctx.fillStyle = 'red';
+      obstacles.forEach(obstacle => {
+        ctx.fillRect(obstacle.x, obstacle.y, obstacle.size, obstacle.size);
+      });
+    }
+
+    // Check collision
+    function checkCollision() {
+      for (const obstacle of obstacles) {
+        if (
+          player.x < obstacle.x + obstacle.size &&
+          player.x + player.size > obstacle.x &&
+          player.y < obstacle.y + obstacle.size &&
+          player.y + player.size > obstacle.y
+        ) {
+          alert('Game Over!');
+          document.location.reload();
+        }
+      }
+    }
+
+    // Clear the canvas
+    function clearCanvas() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    // Update the game
+    function updateGame() {
+      clearCanvas();
+      drawPlayer();
+      drawObstacles();
+      updatePlayer();
+      updateObstacles();
+      checkCollision();
+
+      requestAnimationFrame(updateGame);
+    }
+
+    // Move player
+    function movePlayer(e) {
+      switch (e.key) {
+        case 'ArrowUp':
+          player.dy = -player.speed;
+          break;
+        case 'ArrowDown':
+          player.dy = player.speed;
+          break;
+        case 'ArrowLeft':
+          player.dx = -player.speed;
+          break;
+        case 'ArrowRight':
+          player.dx = player.speed;
+          break;
+      }
+    }
+
+    // Stop moving player
+    function stopPlayer(e) {
+      if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+        player.dy = 0;
+      }
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        player.dx = 0;
+      }
+    }
+
+    // Keydown and Keyup event listeners
+    document.addEventListener('keydown', movePlayer);
+    document.addEventListener('keyup', stopPlayer);
+
+    // Start the game
+    function startGame() {
+      for (let i = 0; i < 5; i++) {
+        createObstacle();
+      }
+      updateGame();
+    }
+
+    startGame();
+  </script>
+</body>
+</html>
